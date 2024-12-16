@@ -1,0 +1,279 @@
+let selectedCell = null; // Track the selected cell globally
+let solvedGrid = [];
+//let newGameGrid = []; // Store the solved Sudoku board
+let filledBoard = []; // Store the current state of the board
+let newGameGrid;
+document.addEventListener("DOMContentLoaded", () => {
+  const board = document.getElementById("sudoku");
+  const keyboard = id("keyBoard");
+  document.getElementById("hint_id").classList.add("blur");
+  document.getElementById("validate_id").classList.add("blur");
+  // Start a new game
+  //startNewGame();
+
+  // Generate the keypad
+  const keyBoardTable = document.createElement("table");
+  const keyRow = document.createElement("tr");
+  for (let i = 1; i <= 9; i++) {
+    const keyCell = document.createElement("td");
+    keyCell.textContent = i;
+
+    // Add click event to handle number input
+    keyCell.addEventListener("click", () => {
+      if (selectedCell && !selectedCell.classList.contains("default")) {
+        selectedCell.textContent = i; // Place the number in the selected cell
+        selectedCell.classList.add("user-input"); // Add user-input class
+      } else if (!selectedCell) {
+        alert("Please select a cell first!"); // Alert if no cell is selected
+      } else {
+        alert("Cannot change default values!"); // Prevent modifying default values
+      }
+    });
+
+    keyRow.appendChild(keyCell);
+  }
+  keyBoardTable.appendChild(keyRow);
+  keyboard.appendChild(keyBoardTable);
+
+  // Event listener for the start button
+  const startButton = document.getElementById("start-btn");
+  startButton.addEventListener("click", () => {
+    applyTheme();
+    startNewGame();
+    document.getElementById("hint_id").classList.remove("blur");
+    document.getElementById("validate_id").classList.remove("blur");
+  });
+});
+
+function startNewGame() {
+  const difficulty = document.querySelector('input[name="diff"]:checked').value;
+  newGameGrid = generateNewGame(difficulty);
+  generateBoardFromGrid(newGameGrid);
+  lives = 3;
+  document.getElementById("lives").textContent = `Lives remaining: ${lives}`;
+  startTimer();
+  // return newGameGrid;
+}
+
+function generateNewGame(difficulty) {
+  document.getElementById("sudoku").classList.remove("blur");
+  solvedGrid = generateSolvedGrid(); // Generate a full Sudoku grid
+  const gameGrid = JSON.parse(JSON.stringify(solvedGrid));
+  // console.log("solution 1:,in generateNewGame function", solvedGrid);
+  const blanks = difficulty === "easy" ? 30 : difficulty === "medium" ? 45 : 60;
+
+  for (let i = 0; i < blanks; i++) {
+    let row, col;
+    do {
+      row = Math.floor(Math.random() * 9);
+      col = Math.floor(Math.random() * 9);
+    } while (gameGrid[row][col] === "-"); // Ensure the cell isn't already blank
+    gameGrid[row][col] = "-";
+  }
+  //console.log("solution 2:,in generateNewGame function", solvedGrid);
+  return gameGrid;
+}
+function captureFilledBoard() {
+  const board = document.getElementById("sudoku");
+  filledBoard = []; // Reset the filled board
+
+  // Loop through the table rows and cells
+  const rows = board.getElementsByTagName("tr");
+  for (let i = 0; i < rows.length; i++) {
+    const row = [];
+    const cells = rows[i].getElementsByTagName("td");
+    for (let j = 0; j < cells.length; j++) {
+      row.push(
+        cells[j].textContent === "" ? "-" : parseInt(cells[j].textContent)
+      );
+    }
+    filledBoard.push(row);
+  }
+
+  //console.log("Filled Board:", filledBoard); // Debug log
+}
+function validateSolution() {
+  captureFilledBoard(); // Capture the current state of the board
+  // console.log("solution:", solvedGrid);
+  // Compare filledBoard with solution
+  for (let i = 0; i < 9; i++) {
+    for (let j = 0; j < 9; j++) {
+      if (filledBoard[i][j] !== solvedGrid[i][j]) {
+        alert("Incorrect solution!");
+        clearTimeout(timer);
+        document.getElementById("sudoku").classList.add("blur");
+        return false;
+      }
+    }
+  }
+
+  alert("Congratulations! You solved the Sudoku!");
+  document.getElementById("sudoku").classList.remove("blur");
+  return true;
+}
+
+function generateSolvedGrid() {
+  const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
+
+  // Populate the grid with a valid Sudoku solution
+  fillGrid(grid);
+  return grid;
+}
+
+function fillGrid(grid) {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (grid[row][col] === 0) {
+        const numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]); // Shuffle numbers
+        for (const num of numbers) {
+          if (isValidPlace(grid, row, col, num)) {
+            grid[row][col] = num;
+            if (fillGrid(grid)) return true;
+            grid[row][col] = 0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isValidPlace(grid, row, col, num) {
+  for (let i = 0; i < 9; i++) {
+    if (grid[row][i] === num || grid[i][col] === num) return false;
+  }
+
+  const startRow = row - (row % 3);
+  const startCol = col - (col % 3);
+  for (let i = startRow; i < startRow + 3; i++) {
+    for (let j = startCol; j < startCol + 3; j++) {
+      if (grid[i][j] === num) return false;
+    }
+  }
+  return true;
+}
+
+function generateBoardFromGrid(grid) {
+  const board = id("sudoku");
+  const table = document.createElement("table");
+
+  for (let i = 0; i < 9; i++) {
+    const row = document.createElement("tr");
+    for (let j = 0; j < 9; j++) {
+      const cell = document.createElement("td");
+      cell.textContent = grid[i][j] === "-" ? "" : grid[i][j];
+
+      if (grid[i][j] !== "-") {
+        cell.classList.add("default"); // Add default class for pre-filled cells
+      }
+
+      cell.addEventListener("click", () => {
+        if (selectedCell) {
+          selectedCell.classList.remove("selected");
+        }
+        selectedCell = cell;
+        cell.classList.add("selected");
+      });
+
+      row.appendChild(cell);
+    }
+    table.appendChild(row);
+  }
+  board.innerHTML = ""; // Clear the previous board
+  board.appendChild(table);
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+function id(id) {
+  return document.getElementById(id);
+}
+function startTimer() {
+  if (id("time-1").checked) timeRemaining = 300;
+  else if (id("time-2").checked) timeRemaining = 600;
+  else if (id("time-3").checked) timeRemaining = 900;
+  else timeRemaining = 0;
+  //sets times for first second
+  id("timer").textContent = timeConversion(timeRemaining);
+  timer = setInterval(function () {
+    timeRemaining--;
+    if (timeRemaining === 0) endGame();
+    id("timer").textContent = timeConversion(timeRemaining);
+    //clearTimeout(timer);
+  }, 1000);
+}
+function applyTheme() {
+  const body = document.body;
+
+  if (id("theme-1").checked) {
+    body.classList.remove("dark");
+    body.classList.add("light");
+  } else {
+    body.classList.remove("light");
+    body.classList.add("dark");
+  }
+
+  console.log(
+    "Theme applied:",
+    body.classList.contains("dark") ? "Dark" : "Light"
+  );
+}
+function timeConversion(time) {
+  let minutes = Math.floor(time / 60);
+  if (minutes < 10) minutes = "0" + minutes;
+  let seconds = time % 60;
+  if (seconds < 10) seconds = "0" + seconds;
+  return minutes + ":" + seconds;
+}
+function endGame() {
+  //disable moves and stop the timer
+  disableSelect = true;
+  clearTimeout(timer);
+  //display win or loss
+  if (lives < 0 || timeRemaining === 0) {
+    clearInterval(timer);
+    id("lives").textContent = "You Lost!";
+  } else {
+    id("lives").textContent = "You win!";
+  }
+}
+function getHint() {
+  // alert("get hint");
+  // const hint= document.getElementById("hint_id")
+  // hint.addEventListener("click",{
+  if (!selectedCell) {
+    alert("Please select a cell to get a hint!");
+    return;
+  }
+
+  // Prevent giving a hint for pre-filled cells
+  if (selectedCell.classList.contains("default")) {
+    alert("Cannot give a hint for pre-filled cells!");
+    return;
+  }
+
+  // Determine the row and column of the selected cell
+  const table = document.getElementById("sudoku");
+  const rows = Array.from(table.getElementsByTagName("tr"));
+  const rowIndex = rows.findIndex((row) =>
+    Array.from(row.children).includes(selectedCell)
+  );
+  const colIndex = Array.from(rows[rowIndex].children).indexOf(selectedCell);
+  lives--;
+  document.getElementById("lives").textContent = `Lives remaining: ${lives}`;
+  if (lives < 0) {
+    endGame();
+  }
+  // Get the correct value from the solved grid
+  const correctValue = solvedGrid[rowIndex][colIndex];
+  selectedCell.textContent = correctValue; // Fill the cell with the correct value
+  selectedCell.classList.add("hint"); // Add a hint-specific class
+
+  console.log(`Hint provided at (${rowIndex}, ${colIndex}): ${correctValue}`);
+}
