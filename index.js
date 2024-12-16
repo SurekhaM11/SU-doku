@@ -1,17 +1,14 @@
-let selectedCell = null; // Track the selected cell globally
+let selectedCell = null;
 let solvedGrid = [];
-//let newGameGrid = []; // Store the solved Sudoku board
-let filledBoard = []; // Store the current state of the board
+//let newGameGrid = [];
+let filledBoard = [];
 let newGameGrid;
 document.addEventListener("DOMContentLoaded", () => {
   const board = document.getElementById("sudoku");
   const keyboard = id("keyBoard");
   document.getElementById("hint_id").classList.add("blur");
   document.getElementById("validate_id").classList.add("blur");
-  // Start a new game
-  //startNewGame();
 
-  // Generate the keypad
   const keyBoardTable = document.createElement("table");
   const keyRow = document.createElement("tr");
   for (let i = 1; i <= 9; i++) {
@@ -21,12 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add click event to handle number input
     keyCell.addEventListener("click", () => {
       if (selectedCell && !selectedCell.classList.contains("default")) {
-        selectedCell.textContent = i; // Place the number in the selected cell
-        selectedCell.classList.add("user-input"); // Add user-input class
+        selectedCell.textContent = i;
+        selectedCell.classList.add("user-input");
       } else if (!selectedCell) {
-        alert("Please select a cell first!"); // Alert if no cell is selected
+        alert("Please select a cell first!");
       } else {
-        alert("Cannot change default values!"); // Prevent modifying default values
+        alert("Cannot change default values!");
       }
     });
 
@@ -52,12 +49,11 @@ function startNewGame() {
   lives = 3;
   document.getElementById("lives").textContent = `Lives remaining: ${lives}`;
   startTimer();
-  // return newGameGrid;
 }
 
 function generateNewGame(difficulty) {
   document.getElementById("sudoku").classList.remove("blur");
-  solvedGrid = generateSolvedGrid(); // Generate a full Sudoku grid
+  solvedGrid = generateSolvedGrid();
   const gameGrid = JSON.parse(JSON.stringify(solvedGrid));
   // console.log("solution 1:,in generateNewGame function", solvedGrid);
   const blanks = difficulty === "easy" ? 30 : difficulty === "medium" ? 45 : 60;
@@ -67,7 +63,7 @@ function generateNewGame(difficulty) {
     do {
       row = Math.floor(Math.random() * 9);
       col = Math.floor(Math.random() * 9);
-    } while (gameGrid[row][col] === "-"); // Ensure the cell isn't already blank
+    } while (gameGrid[row][col] === "-");
     gameGrid[row][col] = "-";
   }
   //console.log("solution 2:,in generateNewGame function", solvedGrid);
@@ -75,7 +71,7 @@ function generateNewGame(difficulty) {
 }
 function captureFilledBoard() {
   const board = document.getElementById("sudoku");
-  filledBoard = []; // Reset the filled board
+  filledBoard = [];
 
   // Loop through the table rows and cells
   const rows = board.getElementsByTagName("tr");
@@ -93,7 +89,7 @@ function captureFilledBoard() {
   //console.log("Filled Board:", filledBoard); // Debug log
 }
 function validateSolution() {
-  captureFilledBoard(); // Capture the current state of the board
+  captureFilledBoard();
   // console.log("solution:", solvedGrid);
   // Compare filledBoard with solution
   for (let i = 0; i < 9; i++) {
@@ -124,7 +120,7 @@ function fillGrid(grid) {
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       if (grid[row][col] === 0) {
-        const numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]); // Shuffle numbers
+        const numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
         for (const num of numbers) {
           if (isValidPlace(grid, row, col, num)) {
             grid[row][col] = num;
@@ -165,7 +161,7 @@ function generateBoardFromGrid(grid) {
       cell.textContent = grid[i][j] === "-" ? "" : grid[i][j];
 
       if (grid[i][j] !== "-") {
-        cell.classList.add("default"); // Add default class for pre-filled cells
+        cell.classList.add("default");
       }
 
       cell.addEventListener("click", () => {
@@ -180,7 +176,7 @@ function generateBoardFromGrid(grid) {
     }
     table.appendChild(row);
   }
-  board.innerHTML = ""; // Clear the previous board
+  board.innerHTML = "";
   board.appendChild(table);
 }
 
@@ -205,7 +201,6 @@ function startTimer() {
     timeRemaining--;
     if (timeRemaining === 0) endGame();
     id("timer").textContent = timeConversion(timeRemaining);
-    //clearTimeout(timer);
   }, 1000);
 }
 function applyTheme() {
@@ -244,9 +239,6 @@ function endGame() {
   }
 }
 function getHint() {
-  // alert("get hint");
-  // const hint= document.getElementById("hint_id")
-  // hint.addEventListener("click",{
   if (!selectedCell) {
     alert("Please select a cell to get a hint!");
     return;
@@ -272,8 +264,8 @@ function getHint() {
   }
   // Get the correct value from the solved grid
   const correctValue = solvedGrid[rowIndex][colIndex];
-  selectedCell.textContent = correctValue; // Fill the cell with the correct value
-  selectedCell.classList.add("hint"); // Add a hint-specific class
+  selectedCell.textContent = correctValue;
+  selectedCell.classList.add("hint");
 
   console.log(`Hint provided at (${rowIndex}, ${colIndex}): ${correctValue}`);
 }
