@@ -220,3 +220,8 @@ footer {
   color: #155724;
   font-style: italic;
 }
+#keyBoard td.disabled {
+  background-color: #e0e0e0; /* Gray background */
+  color: #a0a0a0; /* Dimmed text */
+  cursor: not-allowed; /* Show a not-allowed cursor */
+}

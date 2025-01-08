@@ -36,18 +36,21 @@
         </div>
         <button id="start-btn">Create New Game!</button>
     </header>
-    <div id="stats">
-        <p id="timer">Timer</p>
-        <p id="lives">Lives</p>
-    </div>
-    <div id="sudoku"></div>
-    <script src="index.js" type="text/javascript">
+    <div id="sudoku-board">
+        <div id="stats">
+            <p id="timer">Timer</p>
+            <p id="lives">Lives</p>
+        </div>
+        <div id="sudoku"></div>
 
-    </script>
-    <div id="keyBoard" class="keyBoard"></div>
-    <div class="solve_button">
-        <button class="btn btn-primary" id="hint_id" onclick="getHint()">Hint</button>
-        <button class="btn btn-success" id="validate_id" onclick="validateSolution()">Validate</button>
+        <script src="index.js" type="text/javascript">
+
+        </script>
+        <div id="keyBoard" class="keyBoard"></div>
+        <div class="solve_button" id="buttons">
+            <button class="btn btn-primary" id="hint_id" onclick="getHint()">Hint</button>
+            <button class="btn btn-success" id="validate_id" onclick="validateSolution()">Validate</button>
+        </div>
     </div>
 </body>
 <!-- <footer>

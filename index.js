@@ -3,27 +3,50 @@ let solvedGrid = [];
 //let newGameGrid = [];
 let filledBoard = [];
 let newGameGrid;
+const numberTracker = {
+  1: { filled: 0, total: 9 },
+  2: { filled: 0, total: 9 },
+  3: { filled: 0, total: 9 },
+  4: { filled: 0, total: 9 },
+  5: { filled: 0, total: 9 },
+  6: { filled: 0, total: 9 },
+  7: { filled: 0, total: 9 },
+  8: { filled: 0, total: 9 },
+  9: { filled: 0, total: 9 },
+};
+let preFilledCount = 0;
 document.addEventListener("DOMContentLoaded", () => {
   const board = document.getElementById("sudoku");
   const keyboard = id("keyBoard");
-  document.getElementById("hint_id").classList.add("blur");
-  document.getElementById("validate_id").classList.add("blur");
-
+  // document.getElementById("hint_id").classList.add("blur");
+  // document.getElementById("validate_id").classList.add("blur");
+  document.getElementById("sudoku-board").classList.add("blur");
   const keyBoardTable = document.createElement("table");
   const keyRow = document.createElement("tr");
   for (let i = 1; i <= 9; i++) {
     const keyCell = document.createElement("td");
     keyCell.textContent = i;
-
+    keyCell.setAttribute("data-number", i);
     // Add click event to handle number input
+
     keyCell.addEventListener("click", () => {
-      if (selectedCell && !selectedCell.classList.contains("default")) {
-        selectedCell.textContent = i;
-        selectedCell.classList.add("user-input");
-      } else if (!selectedCell) {
-        alert("Please select a cell first!");
-      } else {
-        alert("Cannot change default values!");
+      if (!keyCell.classList.contains("disabled")) {
+        if (selectedCell && !selectedCell.classList.contains("default")) {
+          const currentNumber = selectedCell.textContent;
+          const newNumber = i;
+
+          if (currentNumber) {
+            updateTracker(currentNumber, "remove"); // Remove the old number from the tracker
+          }
+
+          selectedCell.textContent = newNumber; // Place the new number
+          updateTracker(newNumber, "add"); // Add the new number to the tracker
+          selectedCell.classList.add("user-input"); // Mark as user-input
+        } else if (!selectedCell) {
+          alert("Please select a cell first!"); // Alert if no cell is selected
+        } else {
+          alert("Cannot change default values!"); // Prevent modifying default values
+        }
       }
     });
 
@@ -36,9 +59,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const startButton = document.getElementById("start-btn");
   startButton.addEventListener("click", () => {
     applyTheme();
-    startNewGame();
-    document.getElementById("hint_id").classList.remove("blur");
-    document.getElementById("validate_id").classList.remove("blur");
+    const gameGrid = startNewGame();
+
+    // document.getElementById("hint_id").classList.remove("blur");
+    // document.getElementById("validate_id").classList.remove("blur");
+    document.getElementById("sudoku-board").classList.remove("blur");
+    //console.log("grid from start:", gameGrid);
+    initializeTracker(gameGrid);
   });
 });
 
@@ -48,11 +75,17 @@ function startNewGame() {
   generateBoardFromGrid(newGameGrid);
   lives = 3;
   document.getElementById("lives").textContent = `Lives remaining: ${lives}`;
+  //document.getElementById("buttons").classList.remove("blur");
+  document.getElementById("sudoku-board").classList.remove("blur");
   startTimer();
+  preFilledCount = countPreFilledCells(newGameGrid);
+  console.log(`Pre-filled cells: ${preFilledCount}`);
+
+  return newGameGrid;
 }
 
 function generateNewGame(difficulty) {
-  document.getElementById("sudoku").classList.remove("blur");
+  document.getElementById("sudoku-board").classList.remove("blur");
   solvedGrid = generateSolvedGrid();
   const gameGrid = JSON.parse(JSON.stringify(solvedGrid));
   // console.log("solution 1:,in generateNewGame function", solvedGrid);
@@ -97,14 +130,18 @@ function validateSolution() {
       if (filledBoard[i][j] !== solvedGrid[i][j]) {
         alert("Incorrect solution!");
         clearTimeout(timer);
-        document.getElementById("sudoku").classList.add("blur");
+        // document.getElementById("buttons").classList.add("blur");
+        // document.getElementById("sudoku").classList.add("blur");
+        // document.getElementById("keyBoard").classList.add("blur");
+        document.getElementById("sudoku-board").classList.add("blur");
         return false;
       }
     }
   }
-
+  //document.getElementById("sudoku").classList.add("blur");
+  document.getElementById("sudoku-board").classList.add("blur");
   alert("Congratulations! You solved the Sudoku!");
-  document.getElementById("sudoku").classList.remove("blur");
+
   return true;
 }
 
@@ -214,10 +251,10 @@ function applyTheme() {
     body.classList.add("dark");
   }
 
-  console.log(
-    "Theme applied:",
-    body.classList.contains("dark") ? "Dark" : "Light"
-  );
+  // console.log(
+  //   "Theme applied:",
+  //   body.classList.contains("dark") ? "Dark" : "Light"
+  // );
 }
 function timeConversion(time) {
   let minutes = Math.floor(time / 60);
@@ -232,10 +269,20 @@ function endGame() {
   clearTimeout(timer);
   //display win or loss
   if (lives < 0 || timeRemaining === 0) {
+    if (timeRemaining === 0) {
+      alert("Time's Up, You lost");
+    }
+    if (lives === 0) {
+      alert(" exceeded hints");
+    }
+    //document.getElementById("sudoku").classList.add("blur");
+    document.getElementById("sudoku-board").classList.add("blur");
     clearInterval(timer);
     id("lives").textContent = "You Lost!";
   } else {
     id("lives").textContent = "You win!";
+    // document.getElementById("sudoku").classList.add("blur");
+    document.getElementById("sudoku-board").classList.add("blur");
   }
 }
 function getHint() {
@@ -260,12 +307,114 @@ function getHint() {
   lives--;
   document.getElementById("lives").textContent = `Lives remaining: ${lives}`;
   if (lives < 0) {
-    endGame();
+    console.log("lives:", lives);
+    if (lives === -1) {
+      const result = window.confirm(
+        "Hints limit Exceeded.Do you want to continue?...Without Hints"
+      );
+      console.log("prompt:", result);
+      if (result) {
+        alert("No hints will be provided");
+        lives = 0;
+        document.getElementById(
+          "lives"
+        ).textContent = `Lives remaining: ${lives}`;
+      } else {
+        alert("Game ends");
+        document.getElementById("keyBoard").classList.add("blur");
+        document.getElementById("buttons").classList.add("blur");
+        endGame();
+      }
+    }
+  } else {
+    // Get the correct value from the solved grid
+    const correctValue = solvedGrid[rowIndex][colIndex];
+    selectedCell.textContent = correctValue;
+    updateTracker(correctValue, "add");
+    selectedCell.classList.add("hint");
   }
-  // Get the correct value from the solved grid
-  const correctValue = solvedGrid[rowIndex][colIndex];
-  selectedCell.textContent = correctValue;
-  selectedCell.classList.add("hint");
+  //console.log(`Hint provided at (${rowIndex}, ${colIndex}): ${correctValue}`);
+}
+function initializeTracker(grid) {
+  //console.log("grid from inilizetracker:", grid);
+  // Reset the tracker
+  Object.keys(numberTracker).forEach((num) => {
+    numberTracker[num].filled = 0;
+    const keyCell = document.querySelector(`[data-number="${num}"]`);
+    if (keyCell) {
+      keyCell.classList.remove("disabled");
+      keyCell.style.pointerEvents = "auto";
+      keyCell.style.opacity = "1";
+    }
+  });
 
-  console.log(`Hint provided at (${rowIndex}, ${colIndex}): ${correctValue}`);
+  // Count occurrences of each number in the initial grid
+  for (let i = 0; i < 9; i++) {
+    for (let j = 0; j < 9; j++) {
+      const value = grid[i][j];
+      if (value !== "-") {
+        numberTracker[value].filled++;
+      }
+    }
+  }
+
+  //console.log("Number Tracker Initialized:", numberTracker);
+}
+function updateTracker(number, action) {
+  console.log("action:", action);
+  if (numberTracker[number]) {
+    if (action === "add") {
+      numberTracker[number].filled++;
+      preFilledCount++;
+    } else if (action === "remove") {
+      numberTracker[number].filled--;
+    }
+
+    console.log(`Tracker Updated for ${number}:`, numberTracker[number]);
+    const keyCell = document.querySelector(`[data-number="${number}"]`);
+    if (numberTracker[number].filled === numberTracker[number].total) {
+      keyCell.classList.add("disabled"); // Disable the button
+      keyCell.style.pointerEvents = "none"; // Prevent further clicks
+      keyCell.style.opacity = "0.5"; // Dim the button
+    } else {
+      keyCell.classList.remove("disabled"); // Enable the button if not full
+      keyCell.style.pointerEvents = "auto";
+      keyCell.style.opacity = "1";
+    }
+  }
+  console.log("numbertracker :", numberTracker[number].filled);
+  // for (let i = 0; i < 9; i++) {
+  //   if (numberTracker[number].filled == 9) {
+  //     preFilledCount = preFilledCount + 1;
+  //   }
+  // }
+  console.log("no. of filled positions:", preFilledCount);
+  if (preFilledCount == 81) {
+    validateSolution();
+  }
+}
+// function removeNumber() {
+//   if (selectedCell && !selectedCell.classList.contains("default")) {
+//     const currentNumber = selectedCell.textContent;
+
+//     if (currentNumber) {
+//       updateTracker(currentNumber, "remove"); // Remove the number from the tracker
+//       selectedCell.textContent = ""; // Clear the cell
+//     }
+//   } else {
+//     alert("Cannot remove a number from this cell!");
+//   }
+// }
+function countPreFilledCells(grid) {
+  let count = 0;
+
+  for (let i = 0; i < 9; i++) {
+    for (let j = 0; j < 9; j++) {
+      if (grid[i][j] !== "-") {
+        count++; // Increment the count for each pre-filled cell
+      }
+    }
+  }
+
+  return count;
 }
