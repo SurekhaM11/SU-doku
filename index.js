@@ -141,6 +141,7 @@ function validateSolution() {
   //document.getElementById("sudoku").classList.add("blur");
   document.getElementById("sudoku-board").classList.add("blur");
   alert("Congratulations! You solved the Sudoku!");
+  clearInterval(timer);
 
   return true;
 }
