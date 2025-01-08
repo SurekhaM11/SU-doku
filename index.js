@@ -18,8 +18,6 @@ let preFilledCount = 0;
 document.addEventListener("DOMContentLoaded", () => {
   const board = document.getElementById("sudoku");
   const keyboard = id("keyBoard");
-  // document.getElementById("hint_id").classList.add("blur");
-  // document.getElementById("validate_id").classList.add("blur");
   document.getElementById("sudoku-board").classList.add("blur");
   const keyBoardTable = document.createElement("table");
   const keyRow = document.createElement("tr");
@@ -36,16 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
           const newNumber = i;
 
           if (currentNumber) {
-            updateTracker(currentNumber, "remove"); // Remove the old number from the tracker
+            updateTracker(currentNumber, "remove");
           }
 
-          selectedCell.textContent = newNumber; // Place the new number
-          updateTracker(newNumber, "add"); // Add the new number to the tracker
-          selectedCell.classList.add("user-input"); // Mark as user-input
+          selectedCell.textContent = newNumber;
+          updateTracker(newNumber, "add");
+          selectedCell.classList.add("user-input");
         } else if (!selectedCell) {
-          alert("Please select a cell first!"); // Alert if no cell is selected
+          alert("Please select a cell first!");
         } else {
-          alert("Cannot change default values!"); // Prevent modifying default values
+          alert("Cannot change default values!");
         }
       }
     });
@@ -61,8 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
     applyTheme();
     const gameGrid = startNewGame();
 
-    // document.getElementById("hint_id").classList.remove("blur");
-    // document.getElementById("validate_id").classList.remove("blur");
     document.getElementById("sudoku-board").classList.remove("blur");
     //console.log("grid from start:", gameGrid);
     initializeTracker(gameGrid);
@@ -75,7 +71,6 @@ function startNewGame() {
   generateBoardFromGrid(newGameGrid);
   lives = 3;
   document.getElementById("lives").textContent = `Lives remaining: ${lives}`;
-  //document.getElementById("buttons").classList.remove("blur");
   document.getElementById("sudoku-board").classList.remove("blur");
   startTimer();
   preFilledCount = countPreFilledCells(newGameGrid);
@@ -130,15 +125,11 @@ function validateSolution() {
       if (filledBoard[i][j] !== solvedGrid[i][j]) {
         alert("Incorrect solution!");
         clearTimeout(timer);
-        // document.getElementById("buttons").classList.add("blur");
-        // document.getElementById("sudoku").classList.add("blur");
-        // document.getElementById("keyBoard").classList.add("blur");
         document.getElementById("sudoku-board").classList.add("blur");
         return false;
       }
     }
   }
-  //document.getElementById("sudoku").classList.add("blur");
   document.getElementById("sudoku-board").classList.add("blur");
   alert("Congratulations! You solved the Sudoku!");
   clearInterval(timer);
@@ -276,13 +267,11 @@ function endGame() {
     if (lives === 0) {
       alert(" exceeded hints");
     }
-    //document.getElementById("sudoku").classList.add("blur");
     document.getElementById("sudoku-board").classList.add("blur");
     clearInterval(timer);
     id("lives").textContent = "You Lost!";
   } else {
     id("lives").textContent = "You win!";
-    // document.getElementById("sudoku").classList.add("blur");
     document.getElementById("sudoku-board").classList.add("blur");
   }
 }
@@ -374,45 +363,29 @@ function updateTracker(number, action) {
     console.log(`Tracker Updated for ${number}:`, numberTracker[number]);
     const keyCell = document.querySelector(`[data-number="${number}"]`);
     if (numberTracker[number].filled === numberTracker[number].total) {
-      keyCell.classList.add("disabled"); // Disable the button
-      keyCell.style.pointerEvents = "none"; // Prevent further clicks
-      keyCell.style.opacity = "0.5"; // Dim the button
+      keyCell.classList.add("disabled");
+      keyCell.style.pointerEvents = "none";
+      keyCell.style.opacity = "0.5";
     } else {
-      keyCell.classList.remove("disabled"); // Enable the button if not full
+      keyCell.classList.remove("disabled");
       keyCell.style.pointerEvents = "auto";
       keyCell.style.opacity = "1";
     }
   }
   console.log("numbertracker :", numberTracker[number].filled);
-  // for (let i = 0; i < 9; i++) {
-  //   if (numberTracker[number].filled == 9) {
-  //     preFilledCount = preFilledCount + 1;
-  //   }
-  // }
   console.log("no. of filled positions:", preFilledCount);
   if (preFilledCount == 81) {
     validateSolution();
   }
 }
-// function removeNumber() {
-//   if (selectedCell && !selectedCell.classList.contains("default")) {
-//     const currentNumber = selectedCell.textContent;
 
-//     if (currentNumber) {
-//       updateTracker(currentNumber, "remove"); // Remove the number from the tracker
-//       selectedCell.textContent = ""; // Clear the cell
-//     }
-//   } else {
-//     alert("Cannot remove a number from this cell!");
-//   }
-// }
 function countPreFilledCells(grid) {
   let count = 0;
 
   for (let i = 0; i < 9; i++) {
     for (let j = 0; j < 9; j++) {
       if (grid[i][j] !== "-") {
-        count++; // Increment the count for each pre-filled cell
+        count++;
       }
     }
   }
